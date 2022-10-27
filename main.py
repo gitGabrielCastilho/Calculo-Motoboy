@@ -5,13 +5,15 @@ from tkcalendar import Calendar
 
 
 def relatorio():
+    dst_path = r'MTK:C:/Microsys/MsysIndustrial/Dados/MSYSDADOS.FDB'
+
+
 
     TABLE_NAME = 'CARREGAMENTO'
-    SELECT = 'select CAR_NUMERO, CAR_KMVALOR, CAR_KMTOTAL, CAR_FRETEVALOR, CAR_DATA from %s ' \
+    SELECT = 'select CAR_NUMERO, CAR_KMVALOR, CAR_KMTOTAL, CAR_FRETEVALOR, CAR_DATA, CAR_MOTORISTA from %s ' \
              'WHERE CAR_KMVALOR  > 0 ORDER BY CAR_DATA' % TABLE_NAME
 
-    con = fdb.connect(dsn=r'C:\Users\Gabriel\Desktop\MSYSDADOS.FDB', user='SYSDBA', password='masterkey',
-                      charset='UTF8')
+    con = fdb.connect(dsn=dst_path, user='SYSDBA', password='masterkey', charset='UTF8')
 
     cur = con.cursor()
     cur.execute(SELECT)
@@ -19,8 +21,6 @@ def relatorio():
     table_rows = cur.fetchall()
 #
     df = pd.DataFrame(table_rows)
-    print(df.head(5))
-    print('*' * 70)
 
 ################################################################################################
     root = Tk()
@@ -41,21 +41,19 @@ def relatorio():
 
     def calcula():
 
-        l = str(date1.cget("text"))
-        k = str(date2.cget("text"))
+        for nome in df.loc[5]:
+            if nome == "GUALTER":
+                l = str(date1.cget("text"))
+                k = str(date2.cget("text"))
+                x = df.loc[(df[4] >= l) & (df[4] <= k)]
+                df_sum = str(sum(x[2]))
+                print(x.head(5))
+                print("*" * 70)
+                h.config(text="R$" + df_sum)
+            else:
+                pass
 
-        x = df.loc[(df[4] >= l) & (df[4] < k)]
 
-        df_sum = str(sum(x[2]))
-
-        print(x.head(5))
-
-        print("*" * 70)
-
-        h.config(text="R$" + df_sum)
-
-
-    # Add Button and Label
     Button(root, text="Escolha Primeira Data", command=grad_date1).pack(pady=10)
     date1 = Label(root, text="")
     date1.pack(pady=10)
@@ -70,7 +68,6 @@ def relatorio():
     h = Label(root, text="")
     h.pack(pady=10)
 
-    # Execute Tkinter
     root.mainloop()
 ################################################################################################
 relatorio()
